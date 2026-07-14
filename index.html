@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario de Equipos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            background-color: #f5f5f5;
+            color: #222;
+        }
+        h1 {
+            color: #1a1a2e;
+        }
+        h2 {
+            color: #1a1a2e;
+            margin-top: 40px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 6px;
+        }
+        #lista-equipos p, #lista-historial p {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 8px 0;
+        }
+        button {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 6px;
+        }
+        button:hover {
+            background-color: #15803d;
+        }
+        button.devolver {
+            background-color: #2563eb;
+        }
+        button.devolver:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sistema de Inventario</h1>
+
+    <div id="lista-equipos">
+        <p>Cargando equipos...</p>
+    </div>
+
+    <h2>Historial de préstamos</h2>
+    <div id="lista-historial">
+        <p>Cargando historial...</p>
+    </div>
+
+    <script>
+        function cargarEquipos() {
+            fetch('http://localhost:3000/api/equipos')
+                .then(respuesta => respuesta.json())
+                .then(equipos => {
+                    let html = '';
+                    equipos.forEach(equipo => {
+                        html += '<p><strong>' + equipo.nombre + '</strong> - ' + equipo.tipo;
+                        if (equipo.disponible) {
+                            html += ' <button onclick="retirarEquipo(' + equipo.id + ')">Retirar</button>';
+                        } else {
+                            html += ' (No disponible) <button class="devolver" onclick="devolverEquipo(' + equipo.id + ')">Devolver</button>';
+                        }
+                        html += '</p>';
+                    });
+                    document.getElementById('lista-equipos').innerHTML = html;
+                });
+        }
+
+        function cargarHistorial() {
+            fetch('http://localhost:3000/api/prestamos')
+                .then(respuesta => respuesta.json())
+                .then(prestamos => {
+                    let html = '';
+                    prestamos.forEach(p => {
+                        const fecha = new Date(p.fechaRetiro).toLocaleString();
+                        html += '<p>' + p.equipoNombre + ' — retirado por ' + p.persona + ' — ' + fecha + '</p>';
+                    });
+                    document.getElementById('lista-historial').innerHTML = html;
+                });
+        }
+
+        function retirarEquipo(id) {
+            const persona = prompt('Nombre de la persona que retira:');
+            if (!persona) {
+                return;
+            }
+
+            fetch('http://localhost:3000/api/prestamos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ equipoId: id, persona: persona })
+            })
+                .then(respuesta => respuesta.json())
+                .then(resultado => {
+                    alert(resultado.mensaje);
+                    cargarEquipos();
+                    cargarHistorial();
+                });
+        }
+
+        function devolverEquipo(id) {
+            fetch('http://localhost:3000/api/devoluciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ equipoId: id })
+            })
+                .then(respuesta => respuesta.json())
+                .then(resultado => {
+                    alert(resultado.mensaje);
+                    cargarEquipos();
+                    cargarHistorial();
+                });
+        }
+
+        cargarEquipos();
+        cargarHistorial();
+    </script>
+</body>
+</html>

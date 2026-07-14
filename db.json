@@ -1,0 +1,60 @@
+{
+  "equipos": [
+    {
+      "id": 1,
+      "nombre": "Camara Sony A7",
+      "tipo": "Camara",
+      "disponible": true
+    },
+    {
+      "id": 2,
+      "nombre": "Microfono Rode NT1",
+      "tipo": "Microfono",
+      "disponible": true
+    },
+    {
+      "id": 3,
+      "nombre": "Tripode Manfrotto",
+      "tipo": "Tripode",
+      "disponible": true
+    },
+    {
+      "id": 4,
+      "nombre": "Luz LED Neewer",
+      "tipo": "Iluminacion",
+      "disponible": true
+    }
+  ],
+  "prestamos": [
+    {
+      "equipoId": 1,
+      "equipoNombre": "Camara Sony A7",
+      "persona": "Juan Perez",
+      "fechaRetiro": "2026-07-13T22:45:14.793Z"
+    },
+    {
+      "equipoId": 1,
+      "equipoNombre": "Camara Sony A7",
+      "persona": "moises",
+      "fechaRetiro": "2026-07-14T00:59:17.360Z"
+    },
+    {
+      "equipoId": 3,
+      "equipoNombre": "Tripode Manfrotto",
+      "persona": "sj",
+      "fechaRetiro": "2026-07-14T00:59:33.712Z"
+    },
+    {
+      "equipoId": 4,
+      "equipoNombre": "Luz LED Neewer",
+      "persona": "shd",
+      "fechaRetiro": "2026-07-14T00:59:42.675Z"
+    },
+    {
+      "equipoId": 1,
+      "equipoNombre": "Camara Sony A7",
+      "persona": "jsd",
+      "fechaRetiro": "2026-07-14T00:59:53.018Z"
+    }
+  ]
+}
