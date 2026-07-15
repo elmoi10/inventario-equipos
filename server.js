@@ -2,6 +2,14 @@ const http = require('http');
 const fs = require('fs');
 const server = http.createServer((req, res) => {
     console.log('Alguien pidió:', req.url);
+
+    if (req.url === '/') {
+        const html = fs.readFileSync('index.html', 'utf-8');
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(html);
+        return;
+    }
+
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -82,10 +90,7 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    if (req.url === '/') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Bienvenido al sistema de inventario!\n');
-    } else if (req.url === '/api/prestamos') {
+    if (req.url === '/api/prestamos') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         const contenido = fs.readFileSync('db.json', 'utf-8');
         const datos = JSON.parse(contenido);
@@ -115,6 +120,8 @@ const server = http.createServer((req, res) => {
         res.end('Ruta no reconocida todavia.\n');
     }
 });
-server.listen(3000, () => {
-    console.log('Servidor corriendo en http://localhost:3000');
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log('Servidor corriendo en el puerto ' + PORT);
 });

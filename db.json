@@ -55,6 +55,18 @@
       "equipoNombre": "Camara Sony A7",
       "persona": "jsd",
       "fechaRetiro": "2026-07-14T00:59:53.018Z"
+    },
+    {
+      "equipoId": 1,
+      "equipoNombre": "Camara Sony A7",
+      "persona": "sdhs",
+      "fechaRetiro": "2026-07-15T00:19:55.037Z"
+    },
+    {
+      "equipoId": 3,
+      "equipoNombre": "Tripode Manfrotto",
+      "persona": "maxma",
+      "fechaRetiro": "2026-07-15T00:20:31.179Z"
     }
   ]
 }
