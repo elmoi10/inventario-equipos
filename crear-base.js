@@ -7,7 +7,7 @@ db.exec('DROP TABLE IF EXISTS prestamos');
 db.exec('DROP TABLE IF EXISTS equipos');
 
 db.exec('CREATE TABLE equipos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, tipo TEXT NOT NULL, disponible INTEGER NOT NULL DEFAULT 1)');
-db.exec('CREATE TABLE prestamos (id INTEGER PRIMARY KEY AUTOINCREMENT, equipo_id INTEGER NOT NULL, persona TEXT NOT NULL, fecha_retiro TEXT NOT NULL, FOREIGN KEY (equipo_id) REFERENCES equipos(id))');
+db.exec('CREATE TABLE prestamos (id INTEGER PRIMARY KEY AUTOINCREMENT, equipo_id INTEGER NOT NULL, persona TEXT NOT NULL, fecha_retiro TEXT NOT NULL, fecha_devolucion TEXT, FOREIGN KEY (equipo_id) REFERENCES equipos(id))');
 
 const datos = JSON.parse(fs.readFileSync('db.json', 'utf-8'));
 

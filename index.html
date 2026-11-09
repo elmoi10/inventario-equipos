@@ -1,950 +1,340 @@
-<!DOCTYPE html>
-<html lang="es">
+﻿<!DOCTYPE html>
+<html lang="es" data-tema="oscuro">
 <head>
-    <meta charset="UTF-8">
-    <title>Inventario de Equipos</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', Arial, sans-serif;
-            margin: 0;
-            background-color: #080c16;
-            color: #e6e8f0;
-            cursor: none;
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventario de Equipos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root[data-tema="oscuro"]{--fondo:#0b0f1a;--panel:rgba(18,24,43,.72);--borde:rgba(120,130,180,.18);--texto:#e6e8f0;--suave:#8a90a8;--acento:#a855f7;--acento2:#6366f1;--luz:168,85,247;--ok:#4ade80;--mal:#f87171;--sombra:0 4px 24px rgba(0,0,0,.35)}
+:root[data-tema="claro"]{--fondo:#eef0f7;--panel:rgba(255,255,255,.78);--borde:rgba(90,100,150,.18);--texto:#1e1e2e;--suave:#6b7088;--acento:#7c3aed;--acento2:#6366f1;--luz:124,58,237;--ok:#16a34a;--mal:#dc2626;--sombra:0 4px 20px rgba(60,60,120,.12)}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',Arial,sans-serif;background:var(--fondo);color:var(--texto);transition:background .3s,color .3s;min-height:100vh}
+#luces{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;display:flex;min-height:100vh}
+.sidebar{width:250px;flex-shrink:0;background:var(--panel);backdrop-filter:blur(14px);border-right:1px solid var(--borde);display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh}
+.marca{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;padding:4px 8px 20px}
+.marca .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acento),var(--acento2));display:grid;place-items:center;font-size:16px}
+.nav-titulo{font-size:11px;letter-spacing:1px;color:var(--suave);padding:14px 10px 6px;font-weight:700}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--texto);padding:10px 12px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left;margin-bottom:2px;transition:background .15s}
+.nav-item:hover{background:rgba(var(--luz),.12)}
+.nav-item.activo{background:linear-gradient(90deg,rgba(var(--luz),.25),rgba(var(--luz),.06));color:var(--acento)}
+.nav-item .ico{width:22px;text-align:center}
+.sidebar .espacio{flex:1}
+.contenido{flex:1;min-width:0;padding:24px 32px 50px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.topbar h1{margin:0;font-size:26px;font-weight:800}
+.topbar p{margin:4px 0 0;color:var(--suave);font-size:14px}
+.buscador{background:var(--panel);border:1px solid var(--borde);color:var(--texto);padding:10px 14px;border-radius:10px;font:inherit;font-size:14px;width:240px;backdrop-filter:blur(10px)}
+.vista{display:none}
+.vista.activa{display:block;animation:entrar .35s ease}
+@keyframes entrar{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card{background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--borde);border-radius:14px;box-shadow:var(--sombra)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:22px}
+.stat{padding:18px 20px}
+.stat .etq{color:var(--suave);font-size:13px;font-weight:600}
+.stat .num{font-size:32px;font-weight:800;margin-top:6px;background:linear-gradient(90deg,var(--acento),var(--acento2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.fila-2{display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+@media(max-width:1000px){.fila-2{grid-template-columns:1fr}}
+.card h3{margin:0;padding:16px 20px;font-size:16px;border-bottom:1px solid var(--borde)}
+.card .cuerpo{padding:16px 20px}
+.barra-fila{margin-bottom:14px}
+.barra-fila .tit{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.barra{height:10px;background:rgba(var(--luz),.12);border-radius:99px;overflow:hidden}
+.barra span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acento),var(--acento2));transition:width .6s ease}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--suave);font-size:12px;font-weight:700;padding:10px 20px;letter-spacing:.5px}
+td{padding:12px 20px;border-top:1px solid var(--borde)}
+.vacio{color:var(--suave);font-size:14px;padding:6px 0}
+.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.equipo{padding:18px;display:flex;flex-direction:column;gap:8px;transition:transform .15s,border-color .15s}
+.equipo:hover{transform:translateY(-3px);border-color:var(--acento)}
+.equipo .icono{font-size:30px}
+.equipo .nombre{font-weight:700}
+.equipo .tipo{color:var(--suave);font-size:13px}
+.badge{width:fit-content;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700}
+.badge.ok{color:var(--ok);background:rgba(74,222,128,.14);border:1px solid rgba(74,222,128,.3)}
+.badge.mal{color:var(--mal);background:rgba(248,113,113,.14);border:1px solid rgba(248,113,113,.3)}
+.btn{border:none;color:#fff;padding:9px 14px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;background:linear-gradient(90deg,#16a34a,#22c55e)}
+.btn.azul{background:linear-gradient(90deg,var(--acento2),var(--acento))}
+.btn.gris{background:transparent;border:1px solid var(--borde);color:var(--texto)}
+.btn:hover{opacity:.9}
+.fondo-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;place-items:center;z-index:50}
+.fondo-modal.abierto{display:grid}
+.modal{width:min(380px,90vw);padding:24px}
+.modal h3{border:none;padding:0 0 6px}
+.modal input{width:100%;padding:11px 12px;margin:12px 0 16px;border-radius:9px;border:1px solid var(--borde);background:transparent;color:var(--texto);font:inherit}
+.modal .acciones{display:flex;gap:10px;justify-content:flex-end}
+#toast{position:fixed;bottom:24px;right:24px;z-index:60;padding:12px 18px;border-radius:10px;background:linear-gradient(90deg,var(--acento),var(--acento2));color:#fff;font-weight:600;transform:translateY(80px);opacity:0;transition:.3s}
+#toast.visible{transform:none;opacity:1}
+@media(max-width:800px){.sidebar{width:64px;padding:14px 8px}.sidebar .txt,.marca span,.nav-titulo{display:none}.contenido{padding:18px 16px}}
 
-        /* Fondo cinematográfico ambiental con fotografía de estudio translúcida */
-        .fondo-decorativo {
-            position: fixed;
-            inset: 0;
-            background-image: 
-                radial-gradient(circle at 18% 18%, rgba(168, 85, 247, 0.2), transparent 45%),
-                radial-gradient(circle at 82% 78%, rgba(99, 102, 241, 0.16), transparent 50%),
-                linear-gradient(to bottom, rgba(8, 12, 22, 0.84), rgba(8, 12, 22, 0.94)),
-                url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2000&q=80');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        #cursor-punto {
-            position: fixed;
-            width: 8px;
-            height: 8px;
-            background: #a855f7;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-        }
-        #cursor-anillo {
-            position: fixed;
-            width: 34px;
-            height: 34px;
-            border: 1.5px solid #a855f7;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            transition: transform 0.05s linear;
-        }
-
-        .marquee-wrap {
-            width: 100%;
-            overflow: hidden;
-            border-top: 1px solid #1e2540;
-            border-bottom: 1px solid #1e2540;
-            padding: 12px 0;
-            background: #0e1424;
-        }
-        .marquee-track {
-            display: flex;
-            width: max-content;
-            animation: desplazar 18s linear infinite;
-            gap: 40px;
-        }
-        .marquee-track span {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: #7d8399;
-            white-space: nowrap;
-        }
-        .marquee-track span.dot {
-            color: #a855f7;
-        }
-        @keyframes desplazar {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-
-        #landing {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        #landing-contenido {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 24px;
-            background: transparent;
-        }
-        .tag {
-            border: 1px solid #2a3352;
-            color: #d8b4fe;
-            padding: 6px 16px;
-            border-radius: 999px;
-            font-size: 13px;
-            margin-bottom: 24px;
-        }
-        #landing h1 {
-            font-size: 42px;
-            font-weight: 800;
-            margin: 0;
-            line-height: 1.2;
-        }
-        #landing h1 span {
-            background: linear-gradient(90deg, #a855f7, #818cf8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        #landing p.subtitulo {
-            color: #9aa3b8;
-            max-width: 500px;
-            margin: 18px 0 30px;
-            font-size: 16px;
-        }
-        .boton-entrar {
-            background: linear-gradient(90deg, #a855f7, #6366f1);
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: none;
-        }
-        .boton-entrar:hover {
-            opacity: 0.9;
-        }
-        .stats-landing {
-            display: flex;
-            gap: 40px;
-            margin-top: 50px;
-        }
-        .stats-landing div {
-            text-align: center;
-        }
-        .stats-landing .num {
-            font-size: 26px;
-            font-weight: 800;
-            color: #a855f7;
-        }
-        .stats-landing .lbl {
-            font-size: 13px;
-            color: #7d8399;
-        }
-
-        #sistema {
-            display: none;
-        }
-        header {
-            background: rgba(14, 20, 36, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 24px 24px;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 800;
-        }
-        header p {
-            margin: 6px 0 0;
-            color: #7d8399;
-            font-size: 14px;
-        }
-        main {
-            max-width: 950px;
-            margin: 0 auto;
-            padding: 24px 24px 60px;
-        }
-
-        .resumen {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 14px;
-            margin-bottom: 10px;
-        }
-        .tarjeta-resumen {
-            background: rgba(18, 24, 43, 0.72);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 18px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-        }
-        .tarjeta-resumen .numero {
-            font-size: 28px;
-            font-weight: 800;
-            color: #a855f7;
-        }
-        .tarjeta-resumen .etiqueta {
-            font-size: 13px;
-            color: #7d8399;
-            margin-top: 4px;
-        }
-
-        h2 {
-            color: #e6e8f0;
-            margin-top: 44px;
-            border-bottom: 1px solid #1e2540;
-            padding-bottom: 8px;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .seccion-equipos-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-top: 44px;
-            margin-bottom: 16px;
-            border-bottom: 1px solid #1e2540;
-            padding-bottom: 10px;
-        }
-        .seccion-equipos-header h2 {
-            margin: 0;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .buscador-wrap {
-            position: relative;
-            width: 100%;
-            max-width: 300px;
-        }
-        .icono-buscar {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 13px;
-            pointer-events: none;
-            opacity: 0.6;
-        }
-        #buscador-input {
-            width: 100%;
-            padding: 9px 14px 9px 34px;
-            background: #12182b;
-            border: 1px solid #1e2540;
-            border-radius: 10px;
-            color: #e6e8f0;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            font-family: inherit;
-        }
-        #buscador-input:focus {
-            border-color: #a855f7;
-            box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
-        }
-
-        .filtros-contenedor {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 22px;
-        }
-        .filtro-btn {
-            background: #12182b;
-            border: 1px solid #1e2540;
-            color: #9aa3b8;
-            padding: 7px 14px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 0;
-        }
-        .filtro-btn:hover {
-            border-color: #7d8399;
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
-        .filtro-btn.activo {
-            background: rgba(168, 85, 247, 0.2);
-            border-color: #a855f7;
-            color: #d8b4fe;
-            box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
-        }
-
-        .sin-resultados {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 40px 20px;
-            background: #12182b;
-            border: 1px dashed #1e2540;
-            border-radius: 12px;
-        }
-
-        #lista-equipos {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 16px;
-        }
-        .tarjeta-equipo {
-            background: rgba(18, 24, 43, 0.72);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 18px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            opacity: 0;
-            animation: aparecer 0.4s ease forwards;
-            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-        }
-        @keyframes aparecer {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .tarjeta-equipo:hover {
-            transform: translateY(-3px);
-            border-color: #a855f7;
-            box-shadow: 0 0 20px rgba(168,85,247,0.15);
-        }
-        .tarjeta-equipo .icono {
-            font-size: 30px;
-        }
-        .tarjeta-equipo .nombre {
-            font-weight: 700;
-            font-size: 16px;
-        }
-        .tarjeta-equipo .tipo {
-            color: #7d8399;
-            font-size: 13px;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            width: fit-content;
-        }
-        .badge.disponible {
-            background-color: rgba(34,197,94,0.15);
-            color: #4ade80;
-            border: 1px solid rgba(74,222,128,0.3);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .pulso-verde {
-            width: 7px;
-            height: 7px;
-            background-color: #4ade80;
-            border-radius: 50%;
-            box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
-            animation: pulso 1.8s infinite;
-        }
-        @keyframes pulso {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
-            }
-        }
-        .badge.ocupado {
-            background-color: rgba(239,68,68,0.15);
-            color: #f87171;
-            border: 1px solid rgba(248,113,113,0.3);
-        }
-        .info-prestamo-tarjeta {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px dashed rgba(248, 113, 113, 0.3);
-            border-radius: 8px;
-            padding: 8px 10px;
-            font-size: 12px;
-            color: #fca5a5;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 4px;
-        }
-        .info-prestamo-tarjeta strong {
-            color: #ffffff;
-        }
-        button {
-            background: linear-gradient(90deg, #16a34a, #22c55e);
-            color: white;
-            border: none;
-            padding: 9px 14px;
-            border-radius: 8px;
-            cursor: none;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 6px;
-        }
-        button:hover {
-            opacity: 0.9;
-        }
-        button.devolver {
-            background: linear-gradient(90deg, #2563eb, #a855f7);
-        }
-
-        #lista-historial {
-            background: rgba(18, 24, 43, 0.72);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-        }
-        .fila-historial {
-            padding: 13px 18px;
-            border-bottom: 1px solid #1e2540;
-            font-size: 14px;
-        }
-        .fila-historial:last-child {
-            border-bottom: none;
-        }
-        .fila-historial .persona {
-            font-weight: 700;
-            color: #e6e8f0;
-        }
-        .fila-historial .fecha {
-            color: #7d8399;
-            float: right;
-            font-size: 13px;
-        }
-
-        /* ===== MODAL GLASSMORPHISM ===== */
-        #modal-retiro {
-            position: fixed;
-            inset: 0;
-            background: rgba(11, 15, 26, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 99990;
-            animation: fadeIn 0.2s ease;
-        }
-        .modal-contenido {
-            background: #12182b;
-            border: 1px solid rgba(168, 85, 247, 0.35);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 35px rgba(168, 85, 247, 0.15);
-            border-radius: 16px;
-            padding: 28px;
-            width: 90%;
-            max-width: 420px;
-            animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .modal-tag {
-            font-size: 12px;
-            font-weight: 700;
-            color: #a855f7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .modal-titulo {
-            margin: 6px 0 6px;
-            font-size: 20px;
-            font-weight: 800;
-            color: #ffffff;
-        }
-        .modal-desc {
-            margin: 0 0 18px;
-            color: #7d8399;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        .modal-input {
-            width: 100%;
-            padding: 12px 14px;
-            background: #0b0f1a;
-            border: 1px solid #1e2540;
-            border-radius: 10px;
-            color: #e6e8f0;
-            font-size: 15px;
-            margin-bottom: 22px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            font-family: inherit;
-        }
-        .modal-input:focus {
-            border-color: #a855f7;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
-        }
-        .modal-botones {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        .btn-cancelar {
-            background: transparent;
-            border: 1px solid #2a3352;
-            color: #9aa3b8;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .btn-cancelar:hover {
-            border-color: #7d8399;
-            color: #ffffff;
-        }
-        .btn-confirmar {
-            background: linear-gradient(90deg, #a855f7, #6366f1);
-            color: white;
-            border: none;
-            padding: 10px 22px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 14px;
-        }
-        .btn-confirmar:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
-        }
-
-        /* ===== TOAST NOTIFICATIONS ===== */
-        #toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 100000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-        .toast {
-            background: rgba(18, 24, 43, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid #2a3352;
-            color: #e6e8f0;
-            padding: 14px 20px;
-            border-radius: 12px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            pointer-events: auto;
-            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .toast.toast-exito {
-            border-color: rgba(74, 222, 128, 0.45);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 20px rgba(74, 222, 128, 0.15);
-        }
-        .toast.toast-error {
-            border-color: rgba(248, 113, 113, 0.45);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 20px rgba(248, 113, 113, 0.15);
-        }
-        .toast-icono {
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes scaleUp {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-    </style>
+body.portada .app{display:none}
+#portada{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column}
+body:not(.portada) #portada{display:none}
+.p-tema{position:absolute;top:20px;right:24px}
+.p-centro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.p-tag{border:1px solid var(--borde);color:var(--acento);padding:6px 16px;border-radius:999px;font-size:13px;margin-bottom:24px;background:var(--panel)}
+.p-centro h1{font-size:44px;font-weight:800;margin:0;line-height:1.2}
+.p-centro h1 span{background:linear-gradient(90deg,var(--acento),var(--acento2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.p-sub{color:var(--suave);max-width:520px;margin:18px 0 30px;font-size:16px}
+.p-boton{border:none;color:#fff;padding:14px 34px;border-radius:12px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;background:linear-gradient(90deg,var(--acento),var(--acento2))}
+.p-boton:hover{opacity:.9}
+.p-stats{display:flex;gap:44px;margin-top:50px}
+.p-stats .n{font-size:28px;font-weight:800;color:var(--acento)}
+.p-stats .l{font-size:13px;color:var(--suave)}
+.marquee{overflow:hidden;border-top:1px solid var(--borde);background:var(--panel);backdrop-filter:blur(10px);padding:12px 0}
+.marquee-pista{display:flex;width:max-content;animation:desplazar 20s linear infinite}
+.marquee-pista span{padding-right:40px;white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:1px;color:var(--suave)}
+@keyframes desplazar{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.badge.uso{color:#fb923c;background:rgba(251,146,60,.14);border:1px solid rgba(251,146,60,.3)}
+</style>
 </head>
-<body>
+<body class="portada">
+<canvas id="luces"></canvas>
+<div id="portada">
+  <button class="btn gris p-tema" onclick="cambiarTema()">&#9728; / &#127769; Cambiar tema</button>
+  <div class="p-centro">
+    <div class="p-tag">Gesti&oacute;n de Equipos &bull; Tiempo Real</div>
+    <h1>Control total de tu <span>inventario audiovisual</span></h1>
+    <p class="p-sub">Registr&aacute; pr&eacute;stamos, devoluciones y llev&aacute; el historial completo de c&aacute;maras, micr&oacute;fonos y equipos, todo en un solo lugar.</p>
+    <button class="p-boton" onclick="entrarAlSistema()">Entrar al sistema</button>
+    <div class="p-stats">
+      <div><div class="n" id="pEquipos">-</div><div class="l">Equipos</div></div>
+      <div><div class="n" id="pPrestamos">-</div><div class="l">Pr&eacute;stamos</div></div>
+      <div><div class="n">24/7</div><div class="l">Disponible</div></div>
+    </div>
+  </div>
+  <div class="marquee"><div class="marquee-pista"><span>C&Aacute;MARAS &bull; MICR&Oacute;FONOS &bull; TR&Iacute;PODES &bull; ILUMINACI&Oacute;N &bull; CONTROL EN TIEMPO REAL &bull;</span><span>C&Aacute;MARAS &bull; MICR&Oacute;FONOS &bull; TR&Iacute;PODES &bull; ILUMINACI&Oacute;N &bull; CONTROL EN TIEMPO REAL &bull;</span></div></div>
+</div>
 
-    <!-- Fondo cinematográfico ambiental con imagen translúcida -->
-    <div class="fondo-decorativo"></div>
 
-    <div id="cursor-punto"></div>
-    <div id="cursor-anillo"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="marca"><div class="logo">&#127909;</div><span>Inventario AV</span></div>
+    <div class="nav-titulo">MEN&Uacute;</div>
+    <button class="nav-item activo" data-vista="inicio" onclick="mostrarVista('inicio')"><span class="ico">&#127968;</span><span class="txt">Inicio</span></button>
+    <button class="nav-item" data-vista="equipos" onclick="mostrarVista('equipos')"><span class="ico">&#127909;</span><span class="txt">Equipos</span></button>
+    <button class="nav-item" data-vista="historial" onclick="mostrarVista('historial')"><span class="ico">&#128203;</span><span class="txt">Historial</span></button>
+    <div class="espacio"></div>
+    <button class="nav-item" onclick="volverAPortada()"><span class="ico">&#127760;</span><span class="txt">Portada</span></button>
+    <button class="nav-item" onclick="cambiarTema()"><span class="ico" id="icoTema"></span><span class="txt" id="txtTema"></span></button>
+  </aside>
 
-    <div id="landing">
-        <div id="landing-contenido">
-            <div class="tag">Gestión de Equipos • Tiempo Real</div>
-            <h1>Control total de tu <span>inventario audiovisual</span></h1>
-            <p class="subtitulo">Registrá préstamos, devoluciones y llevá el historial completo de cámaras, micrófonos y equipos, todo en un solo lugar.</p>
-            <button class="boton-entrar" onclick="entrarAlSistema()">Entrar al sistema</button>
-            <div class="stats-landing">
-                <div>
-                    <div class="num">4</div>
-                    <div class="lbl">Equipos</div>
-                </div>
-                <div>
-                    <div class="num">100%</div>
-                    <div class="lbl">Trazable</div>
-                </div>
-                <div>
-                    <div class="num">24/7</div>
-                    <div class="lbl">Disponible</div>
-                </div>
-            </div>
-        </div>
-        <div class="marquee-wrap">
-            <div class="marquee-track">
-                <span>CÁMARAS <span class="dot">•</span> MICRÓFONOS <span class="dot">•</span> TRÍPODES <span class="dot">•</span> ILUMINACIÓN <span class="dot">•</span> CONTROL EN TIEMPO REAL <span class="dot">•</span></span>
-                <span>CÁMARAS <span class="dot">•</span> MICRÓFONOS <span class="dot">•</span> TRÍPODES <span class="dot">•</span> ILUMINACIÓN <span class="dot">•</span> CONTROL EN TIEMPO REAL <span class="dot">•</span></span>
-            </div>
-        </div>
+  <main class="contenido">
+    <div class="topbar">
+      <div><h1 id="titulo">Inicio</h1><p id="subtitulo">Resumen general del inventario</p></div>
+      <input class="buscador" id="buscador" placeholder="Buscar equipo..." oninput="buscar()">
     </div>
 
-    <div id="sistema">
-        <header style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h1>Sistema de Inventario</h1>
-                <p>Cámaras, micrófonos y equipos audiovisuales</p>
-            </div>
-            <button onclick="volverALanding()" style="background:transparent; border:1px solid #2a3352; color:#e6e8f0;">← Volver</button>
-        </header>
+    <section class="vista activa" id="vista-inicio">
+      <div class="stats" id="stats"></div>
+      <div class="fila-2">
+        <div class="card"><h3>Pr&eacute;stamos por equipo</h3><div class="cuerpo" id="grafico"></div></div>
+        <div class="card"><h3>&Uacute;ltimos movimientos</h3><div id="ultimos"></div></div>
+      </div>
+    </section>
 
-        <main>
-            <div class="resumen">
-                <div class="tarjeta-resumen">
-                    <div class="numero" id="total-equipos">-</div>
-                    <div class="etiqueta">Equipos totales</div>
-                </div>
-                <div class="tarjeta-resumen">
-                    <div class="numero" id="total-disponibles">-</div>
-                    <div class="etiqueta">Disponibles</div>
-                </div>
-                <div class="tarjeta-resumen">
-                    <div class="numero" id="total-prestados">-</div>
-                    <div class="etiqueta">Prestados</div>
-                </div>
-            </div>
+    <section class="vista" id="vista-equipos"><div class="grilla" id="grilla"></div></section>
 
-            <div class="seccion-equipos-header">
-                <h2>Equipos</h2>
-                <div class="buscador-wrap">
-                    <span class="icono-buscar">🔍</span>
-                    <input type="text" id="buscador-input" placeholder="Buscar por nombre o tipo..." oninput="filtrarEquipos()" autocomplete="off">
-                </div>
-            </div>
+    <section class="vista" id="vista-historial">
+      <div class="card"><table><thead><tr><th>EQUIPO</th><th>PERSONA</th><th>RETIRO</th><th>DEVOLUCI&Oacute;N</th><th>ESTADO</th></tr></thead><tbody id="tablaHistorial"></tbody></table></div>
+    </section>
+  </main>
+</div>
 
-            <!-- Filtros en píldoras -->
-            <div class="filtros-contenedor">
-                <button class="filtro-btn activo" data-filtro="todos" onclick="setFiltro('todos')">Todos</button>
-                <button class="filtro-btn" data-filtro="Camara" onclick="setFiltro('Camara')">📷 Cámaras</button>
-                <button class="filtro-btn" data-filtro="Microfono" onclick="setFiltro('Microfono')">🎤 Micrófonos</button>
-                <button class="filtro-btn" data-filtro="Tripode" onclick="setFiltro('Tripode')">🎥 Trípodes</button>
-                <button class="filtro-btn" data-filtro="Iluminacion" onclick="setFiltro('Iluminacion')">💡 Iluminación</button>
-                <button class="filtro-btn" data-filtro="disponibles" onclick="setFiltro('disponibles')">🟢 Solo disponibles</button>
-            </div>
-
-            <div id="lista-equipos">
-                <p>Cargando equipos...</p>
-            </div>
-
-            <h2>Historial de préstamos</h2>
-            <div id="lista-historial">
-                <p style="padding:16px;">Cargando historial...</p>
-            </div>
-        </main>
+<div class="fondo-modal" id="modal" onclick="if(event.target===this)cerrarModal()">
+  <div class="card modal">
+    <h3>Registrar retiro</h3>
+    <p class="vacio" style="margin:0">Nombre de la persona que retira el equipo</p>
+    <input id="inputPersona" placeholder="Ej: Juan Perez" onkeydown="if(event.key==='Enter')confirmarRetiro()">
+    <div class="acciones">
+      <button class="btn gris" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="confirmarRetiro()">Confirmar</button>
     </div>
+  </div>
+</div>
+<div id="toast"></div>
 
-    <!-- Modal para retirar equipo -->
-    <div id="modal-retiro">
-        <div class="modal-contenido">
-            <div class="modal-tag">Confirmar Retiro</div>
-            <h3 id="modal-equipo-nombre" class="modal-titulo">Equipo</h3>
-            <p class="modal-desc">Ingresá el nombre de la persona responsable que retira este equipo.</p>
-            <input type="text" id="modal-persona-input" class="modal-input" placeholder="Nombre y Apellido" autocomplete="off">
-            <div class="modal-botones">
-                <button type="button" class="btn-cancelar" onclick="cerrarModalRetiro()">Cancelar</button>
-                <button type="button" class="btn-confirmar" onclick="confirmarRetiro()">Confirmar Retiro</button>
-            </div>
-        </div>
-    </div>
+<script>
+let equipos = [], prestamos = [], equipoPendiente = null;
+let colorLuz = '168,85,247', luces = [];
 
-    <!-- Contenedor de notificaciones Toast -->
-    <div id="toast-container"></div>
+const textos = {
+  inicio: ['Inicio', 'Resumen general del inventario'],
+  equipos: ['Equipos', 'Retir\u00e1 o devolv\u00e9 el material'],
+  historial: ['Historial', 'Todos los pr\u00e9stamos registrados']
+};
+const iconos = {'Camara':'\uD83D\uDCF7','Microfono':'\uD83C\uDFA4','Tripode':'\uD83C\uDFA5','Iluminacion':'\uD83D\uDCA1'};
+function icono(t){ return iconos[t] || '\uD83D\uDCE6'; }
 
-    <script>
-        const punto = document.getElementById('cursor-punto');
-        const anillo = document.getElementById('cursor-anillo');
+function esc(t){
+  return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
-        document.addEventListener('mousemove', (evento) => {
-            punto.style.left = evento.clientX + 'px';
-            punto.style.top = evento.clientY + 'px';
-            anillo.style.left = evento.clientX + 'px';
-            anillo.style.top = evento.clientY + 'px';
-        });
+/* ---------- Navegacion ---------- */
+function mostrarVista(v){
+  document.querySelectorAll('.vista').forEach(s => s.classList.remove('activa'));
+  document.getElementById('vista-' + v).classList.add('activa');
+  document.querySelectorAll('.nav-item[data-vista]').forEach(b => b.classList.toggle('activo', b.dataset.vista === v));
+  document.getElementById('titulo').textContent = textos[v][0];
+  document.getElementById('subtitulo').textContent = textos[v][1];
+}
+function buscar(){ mostrarVista('equipos'); renderEquipos(); }
 
-        function entrarAlSistema() {
-            document.getElementById('landing').style.display = 'none';
-            document.getElementById('sistema').style.display = 'block';
-            cargarEquipos();
-            cargarHistorial();
-        }
-        function volverALanding() {
-            document.getElementById('sistema').style.display = 'none';
-            document.getElementById('landing').style.display = 'flex';
-        }
+/* ---------- Datos ---------- */
+function cargarDatos(){
+  Promise.all([
+    fetch('/api/equipos').then(r => r.json()),
+    fetch('/api/prestamos').then(r => r.json())
+  ]).then(([eq, pr]) => {
+    equipos = eq; prestamos = pr;
+    renderStats(); renderPortada(); renderGrafico(); renderUltimos(); renderEquipos(); renderHistorial();
+  });
+}
 
-        const iconosPorTipo = {
-            'Camara': '📷',
-            'Microfono': '🎤',
-            'Tripode': '🎥',
-            'Iluminacion': '💡'
-        };
+function renderStats(){
+  const disp = equipos.filter(e => e.disponible).length;
+  const datos = [['Equipos totales', equipos.length], ['Disponibles', disp], ['Prestados ahora', equipos.length - disp], ['Pr\u00e9stamos registrados', prestamos.length]];
+  document.getElementById('stats').innerHTML = datos.map(d => '<div class="card stat"><div class="etq">' + d[0] + '</div><div class="num">' + d[1] + '</div></div>').join('');
+}
 
-        function iconoDe(tipo) {
-            return iconosPorTipo[tipo] || '📦';
-        }
+function renderGrafico(){
+  const conteo = {};
+  prestamos.forEach(p => { conteo[p.equipoNombre] = (conteo[p.equipoNombre] || 0) + 1; });
+  const lista = Object.entries(conteo).sort((a, b) => b[1] - a[1]);
+  const max = lista.length ? lista[0][1] : 1;
+  document.getElementById('grafico').innerHTML = lista.length
+    ? lista.map(([n, c]) => '<div class="barra-fila"><div class="tit"><span>' + esc(n) + '</span><b>' + c + '</b></div><div class="barra"><span style="width:' + (c / max * 100) + '%"></span></div></div>').join('')
+    : '<p class="vacio">Todavia no hay prestamos.</p>';
+}
 
-        let listaEquiposData = [];
-        let listaPrestamosData = [];
-        let filtroActivo = 'todos';
+function devolucionTexto(p){
+  if (!p.fechaDevolucion) return '-';
+  if (p.fechaDevolucion === p.fechaRetiro) return 'Sin registro';
+  return new Date(p.fechaDevolucion).toLocaleString();
+}
+function estadoPrestamo(p){
+  return p.fechaDevolucion ? '<span class="badge ok">Devuelto</span>' : '<span class="badge uso">En uso</span>';
+}
+function filasTabla(lista){
+  return lista.map(p => '<tr><td>' + esc(p.equipoNombre) + '</td><td>' + esc(p.persona) + '</td><td>' + new Date(p.fechaRetiro).toLocaleString() + '</td><td>' + devolucionTexto(p) + '</td><td>' + estadoPrestamo(p) + '</td></tr>').join('');
+}
+function renderUltimos(){
+  const u = prestamos.slice().reverse().slice(0, 5);
+  document.getElementById('ultimos').innerHTML = '<table><thead><tr><th>EQUIPO</th><th>PERSONA</th><th>ESTADO</th></tr></thead><tbody>' + u.map(p => '<tr><td>' + esc(p.equipoNombre) + '</td><td>' + esc(p.persona) + '</td><td>' + estadoPrestamo(p) + '</td></tr>').join('') + '</tbody></table>';
+}
+function renderHistorial(){
+  document.getElementById('tablaHistorial').innerHTML = filasTabla(prestamos.slice().reverse());
+}
 
-        function cargarEquipos() {
-            Promise.all([
-                fetch('/api/equipos').then(r => r.json()),
-                fetch('/api/prestamos').then(r => r.json())
-            ])
-            .then(([equipos, prestamos]) => {
-                listaEquiposData = equipos;
-                listaPrestamosData = prestamos;
+function renderEquipos(){
+  const q = document.getElementById('buscador').value.toLowerCase();
+  const lista = equipos.filter(e => (e.nombre + ' ' + e.tipo).toLowerCase().includes(q));
+  document.getElementById('grilla').innerHTML = lista.length
+    ? lista.map(e => '<div class="card equipo"><div class="icono">' + icono(e.tipo) + '</div><div class="nombre">' + esc(e.nombre) + '</div><div class="tipo">' + esc(e.tipo) + '</div>' +
+        (e.disponible
+          ? '<span class="badge ok">Disponible</span><button class="btn" onclick="retirarEquipo(' + e.id + ')">Retirar</button>'
+          : '<span class="badge mal">No disponible</span>' + (e.enUsoPor ? '<div class="tipo">En uso por <b>' + esc(e.enUsoPor) + '</b></div>' : '') + '<button class="btn azul" onclick="devolverEquipo(' + e.id + ')">Devolver</button>') +
+      '</div>').join('')
+    : '<p class="vacio">No se encontraron equipos.</p>';
+}
 
-                const disponibles = equipos.filter(e => e.disponible).length;
-                document.getElementById('total-equipos').textContent = equipos.length;
-                document.getElementById('total-disponibles').textContent = disponibles;
-                document.getElementById('total-prestados').textContent = equipos.length - disponibles;
+/* ---------- Acciones ---------- */
+function enviar(url, cuerpo){
+  return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cuerpo)}).then(r => r.json());
+}
+function retirarEquipo(id){
+  equipoPendiente = id;
+  document.getElementById('inputPersona').value = '';
+  document.getElementById('modal').classList.add('abierto');
+  document.getElementById('inputPersona').focus();
+}
+function cerrarModal(){ document.getElementById('modal').classList.remove('abierto'); }
+function confirmarRetiro(){
+  const persona = document.getElementById('inputPersona').value.trim();
+  if (!persona) return;
+  enviar('/api/prestamos', {equipoId: equipoPendiente, persona: persona}).then(r => {
+    cerrarModal(); toast(r.mensaje || r.error); cargarDatos();
+  });
+}
+function devolverEquipo(id){
+  enviar('/api/devoluciones', {equipoId: id}).then(r => { toast(r.mensaje || r.error); cargarDatos(); });
+}
+let temporizador;
+function toast(m){
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('visible');
+  clearTimeout(temporizador);
+  temporizador = setTimeout(() => t.classList.remove('visible'), 2500);
+}
 
-                renderizarEquipos();
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('lista-equipos').innerHTML = '<p style="color:#f87171;">Error al cargar equipos.</p>';
-            });
-        }
+/* ---------- Tema claro / oscuro ---------- */
+function aplicarTema(t){
+  document.documentElement.setAttribute('data-tema', t);
+  try { localStorage.setItem('tema', t); } catch (e) {}
+  document.getElementById('icoTema').innerHTML = t === 'oscuro' ? '&#9728;' : '&#127769;';
+  document.getElementById('txtTema').textContent = t === 'oscuro' ? 'Modo claro' : 'Modo oscuro';
+  actualizarColorLuces();
+}
+function cambiarTema(){
+  aplicarTema(document.documentElement.getAttribute('data-tema') === 'oscuro' ? 'claro' : 'oscuro');
+}
 
-        function setFiltro(tipo) {
-            filtroActivo = tipo;
-            document.querySelectorAll('.filtro-btn').forEach(btn => {
-                btn.classList.toggle('activo', btn.getAttribute('data-filtro') === tipo);
-            });
-            renderizarEquipos();
-        }
+/* ---------- Luces de fondo ---------- */
+const cv = document.getElementById('luces');
+const cx = cv.getContext('2d');
+function ajustar(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
+function crearLuces(){
+  luces = [];
+  for (let i = 0; i < 45; i++){
+    const chica = i % 2 === 0;
+    luces.push({
+      x: Math.random() * cv.width, y: Math.random() * cv.height,
+      vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35,
+      r: chica ? Math.random() * 3 + 2 : Math.random() * 90 + 40,
+      f: Math.random() * 6.28, chica: chica
+    });
+  }
+}
+function actualizarColorLuces(){
+  colorLuz = getComputedStyle(document.documentElement).getPropertyValue('--luz').trim();
+}
+function animar(t){
+  cx.clearRect(0, 0, cv.width, cv.height);
+  luces.forEach(l => {
+    l.x += l.vx; l.y += l.vy;
+    if (l.x < -120) l.x = cv.width + 120;
+    if (l.x > cv.width + 120) l.x = -120;
+    if (l.y < -120) l.y = cv.height + 120;
+    if (l.y > cv.height + 120) l.y = -120;
+    const radio = l.chica ? l.r * 5 : l.r;
+    const alfa = l.chica ? .45 + .3 * Math.sin(t / 900 + l.f) : .09 + .07 * Math.sin(t / 1500 + l.f);
+    const g = cx.createRadialGradient(l.x, l.y, 0, l.x, l.y, radio);
+    g.addColorStop(0, 'rgba(' + colorLuz + ',' + alfa + ')');
+    g.addColorStop(1, 'rgba(' + colorLuz + ',0)');
+    cx.fillStyle = g;
+    cx.beginPath(); cx.arc(l.x, l.y, radio, 0, 6.28); cx.fill();
+  });
+  requestAnimationFrame(animar);
+}
+window.addEventListener('resize', () => { ajustar(); crearLuces(); });
 
-        function filtrarEquipos() {
-            renderizarEquipos();
-        }
 
-        function obtenerUltimoResponsable(equipoId) {
-            const prestamosEquipo = listaPrestamosData.filter(p => p.equipoId == equipoId);
-            if (prestamosEquipo.length === 0) return 'Sin registrar';
-            return prestamosEquipo[prestamosEquipo.length - 1].persona;
-        }
+function entrarAlSistema(){ document.body.classList.remove('portada'); mostrarVista('inicio'); }
+function volverAPortada(){ document.body.classList.add('portada'); }
+function renderPortada(){
+  document.getElementById('pEquipos').textContent = equipos.length;
+  document.getElementById('pPrestamos').textContent = prestamos.length;
+}
 
-        function renderizarEquipos() {
-            const inputBuscar = document.getElementById('buscador-input');
-            const query = (inputBuscar ? inputBuscar.value : '').toLowerCase().trim();
-
-            const filtrados = listaEquiposData.filter(equipo => {
-                const coincideTexto = equipo.nombre.toLowerCase().includes(query) ||
-                                     equipo.tipo.toLowerCase().includes(query);
-                if (!coincideTexto) return false;
-
-                if (filtroActivo === 'todos') return true;
-                if (filtroActivo === 'disponibles') return equipo.disponible === true;
-                return equipo.tipo === filtroActivo;
-            });
-
-            if (filtrados.length === 0) {
-                document.getElementById('lista-equipos').innerHTML = `
-                    <div class="sin-resultados">
-                        <div style="font-size: 28px; margin-bottom: 6px;">🔍</div>
-                        <p style="margin: 0; color: #7d8399; font-weight: 600; font-size: 14px;">No se encontraron equipos para esta búsqueda o filtro.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '';
-            filtrados.forEach((equipo, index) => {
-                html += '<div class="tarjeta-equipo" style="animation-delay:' + (index * 0.05) + 's">';
-                html += '<div class="icono">' + iconoDe(equipo.tipo) + '</div>';
-                html += '<div class="nombre">' + equipo.nombre + '</div>';
-                html += '<div class="tipo">' + equipo.tipo + '</div>';
-
-                if (equipo.disponible) {
-                    html += '<span class="badge disponible"><span class="pulso-verde"></span>Disponible</span>';
-                    html += '<button onclick="abrirModalRetiro(' + equipo.id + ', \'' + equipo.nombre.replace(/'/g, "\\'") + '\')">Retirar</button>';
-                } else {
-                    const responsable = obtenerUltimoResponsable(equipo.id);
-                    html += '<span class="badge ocupado">No disponible</span>';
-                    html += '<div class="info-prestamo-tarjeta"><span>👤</span><span>Prestado a: <strong>' + responsable + '</strong></span></div>';
-                    html += '<button class="devolver" onclick="devolverEquipo(' + equipo.id + ')">Devolver</button>';
-                }
-
-                html += '</div>';
-            });
-
-            document.getElementById('lista-equipos').innerHTML = html;
-        }
-
-        function cargarHistorial() {
-            fetch('/api/prestamos')
-                .then(respuesta => respuesta.json())
-                .then(prestamos => {
-                    if (prestamos.length === 0) {
-                        document.getElementById('lista-historial').innerHTML = '<p style="padding:16px;">Todavia no hay prestamos registrados.</p>';
-                        return;
-                    }
-
-                    let html = '';
-                    const ordenados = prestamos.slice().reverse();
-                    ordenados.forEach(p => {
-                        const fecha = new Date(p.fechaRetiro).toLocaleString();
-                        html += '<div class="fila-historial">';
-                        html += '<span class="fecha">' + fecha + '</span>';
-                        html += p.equipoNombre + ' — <span class="persona">' + p.persona + '</span>';
-                        html += '</div>';
-                    });
-                    document.getElementById('lista-historial').innerHTML = html;
-                });
-        }
-
-        /* ===== SISTEMA DE NOTIFICACIONES TOAST ===== */
-        function mostrarToast(mensaje, tipo = 'exito') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast toast-' + tipo;
-            const icono = tipo === 'exito' ? '✓' : '⚠️';
-            toast.innerHTML = '<span class="toast-icono">' + icono + '</span><span>' + mensaje + '</span>';
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px) scale(0.95)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
-        }
-
-        /* ===== MODAL RETIRO DE EQUIPOS ===== */
-        let equipoSeleccionado = null;
-
-        function abrirModalRetiro(id, nombre) {
-            equipoSeleccionado = id;
-            document.getElementById('modal-equipo-nombre').textContent = nombre;
-            const input = document.getElementById('modal-persona-input');
-            input.value = '';
-            document.getElementById('modal-retiro').style.display = 'flex';
-            setTimeout(() => input.focus(), 50);
-        }
-
-        function cerrarModalRetiro() {
-            document.getElementById('modal-retiro').style.display = 'none';
-            equipoSeleccionado = null;
-        }
-
-        document.getElementById('modal-retiro').addEventListener('click', (e) => {
-            if (e.target.id === 'modal-retiro') cerrarModalRetiro();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && document.getElementById('modal-retiro').style.display === 'flex') {
-                cerrarModalRetiro();
-            }
-        });
-
-        document.getElementById('modal-persona-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') confirmarRetiro();
-        });
-
-        function confirmarRetiro() {
-            const input = document.getElementById('modal-persona-input');
-            const persona = input.value.trim();
-
-            if (!persona) {
-                mostrarToast('Por favor, ingresá el nombre de la persona.', 'error');
-                input.focus();
-                return;
-            }
-
-            fetch('/api/prestamos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ equipoId: equipoSeleccionado, persona: persona })
-            })
-                .then(respuesta => respuesta.json())
-                .then(resultado => {
-                    cerrarModalRetiro();
-                    mostrarToast(resultado.mensaje || 'Préstamo registrado con éxito', 'exito');
-                    cargarEquipos();
-                    cargarHistorial();
-                })
-                .catch(err => {
-                    mostrarToast('Error de conexión al registrar préstamo', 'error');
-                });
-        }
-
-        function devolverEquipo(id) {
-            fetch('/api/devoluciones', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ equipoId: id })
-            })
-                .then(respuesta => respuesta.json())
-                .then(resultado => {
-                    mostrarToast(resultado.mensaje || 'Devolución registrada con éxito', 'exito');
-                    cargarEquipos();
-                    cargarHistorial();
-                })
-                .catch(err => {
-                    mostrarToast('Error al procesar la devolución', 'error');
-                });
-        }
-    </script>
+/* ---------- Inicio ---------- */
+let guardado = 'oscuro';
+try { guardado = localStorage.getItem('tema') || 'oscuro'; } catch (e) {}
+ajustar(); crearLuces(); aplicarTema(guardado);
+requestAnimationFrame(animar);
+cargarDatos();
+</script>
 </body>
 </html>
