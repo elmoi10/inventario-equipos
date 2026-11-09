@@ -3,16 +3,35 @@ const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 
 const db = new DatabaseSync('inventario.db');
-
-function leerCuerpo(req, callback) {
-    let cuerpo = '';
-    req.on('data', (pedazo) => { cuerpo += pedazo; });
-    req.on('end', () => { callback(JSON.parse(cuerpo)); });
-}
+db.exec('PRAGMA foreign_keys = ON');
 
 function responderJSON(res, codigo, datos) {
     res.writeHead(codigo, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(datos));
+}
+
+function leerCuerpo(req, res, callback) {
+    let cuerpo = '';
+    req.on('data', (pedazo) => { cuerpo += pedazo; });
+    req.on('end', () => {
+        let datos;
+        try {
+            datos = cuerpo ? JSON.parse(cuerpo) : {};
+        } catch (e) {
+            responderJSON(res, 400, { error: 'Datos invalidos' });
+            return;
+        }
+        try {
+            callback(datos);
+        } catch (e) {
+            console.error(e);
+            responderJSON(res, 500, { error: 'Error interno del servidor' });
+        }
+    });
+}
+
+function limpiar(valor) {
+    return String(valor || '').trim();
 }
 
 const server = http.createServer((req, res) => {
@@ -26,7 +45,7 @@ const server = http.createServer((req, res) => {
     }
 
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
@@ -35,10 +54,70 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    const rutaEquipo = req.url.match(/^\/api\/equipos\/(\d+)$/);
+
     if (req.method === 'GET' && req.url === '/api/equipos') {
-        const filas = db.prepare('SELECT e.id, e.nombre, e.tipo, e.disponible, (SELECT p.persona FROM prestamos p WHERE p.equipo_id = e.id AND p.fecha_devolucion IS NULL ORDER BY p.id DESC LIMIT 1) AS enUsoPor FROM equipos e').all();
+        const filas = db.prepare('SELECT e.id, e.nombre, e.tipo, e.disponible, (SELECT p.persona FROM prestamos p WHERE p.equipo_id = e.id AND p.fecha_devolucion IS NULL ORDER BY p.id DESC LIMIT 1) AS enUsoPor FROM equipos e ORDER BY e.id').all();
         const equipos = filas.map(f => ({ id: f.id, nombre: f.nombre, tipo: f.tipo, disponible: f.disponible === 1, enUsoPor: f.enUsoPor }));
         responderJSON(res, 200, equipos);
+        return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/equipos') {
+        leerCuerpo(req, res, (datos) => {
+            const nombre = limpiar(datos.nombre);
+            const tipo = limpiar(datos.tipo);
+            if (!nombre || !tipo) {
+                responderJSON(res, 400, { error: 'El nombre y el tipo son obligatorios' });
+                return;
+            }
+            db.prepare('INSERT INTO equipos (nombre, tipo, disponible) VALUES (?, ?, 1)').run(nombre, tipo);
+            responderJSON(res, 200, { mensaje: 'Equipo agregado con exito' });
+        });
+        return;
+    }
+
+    if (req.method === 'PUT' && rutaEquipo) {
+        leerCuerpo(req, res, (datos) => {
+            const nombre = limpiar(datos.nombre);
+            const tipo = limpiar(datos.tipo);
+            if (!nombre || !tipo) {
+                responderJSON(res, 400, { error: 'El nombre y el tipo son obligatorios' });
+                return;
+            }
+            const resultado = db.prepare('UPDATE equipos SET nombre = ?, tipo = ? WHERE id = ?').run(nombre, tipo, Number(rutaEquipo[1]));
+            if (resultado.changes === 0) {
+                responderJSON(res, 404, { error: 'Equipo no encontrado' });
+                return;
+            }
+            responderJSON(res, 200, { mensaje: 'Equipo actualizado con exito' });
+        });
+        return;
+    }
+
+    if (req.method === 'DELETE' && rutaEquipo) {
+        try {
+            const id = Number(rutaEquipo[1]);
+            const equipo = db.prepare('SELECT id, disponible FROM equipos WHERE id = ?').get(id);
+            if (!equipo) {
+                responderJSON(res, 404, { error: 'Equipo no encontrado' });
+                return;
+            }
+            if (equipo.disponible !== 1) {
+                responderJSON(res, 400, { error: 'No se puede borrar: el equipo esta prestado ahora' });
+                return;
+            }
+            const cantidad = db.prepare('SELECT COUNT(*) AS total FROM prestamos WHERE equipo_id = ?').get(id).total;
+            if (cantidad > 0) {
+                responderJSON(res, 409, { error: 'No se puede borrar: el equipo tiene ' + cantidad + ' prestamo(s) en el historial' });
+                return;
+            }
+            db.prepare('DELETE FROM equipos WHERE id = ?').run(id);
+            responderJSON(res, 200, { mensaje: 'Equipo borrado con exito' });
+        } catch (e) {
+            console.error(e);
+            responderJSON(res, 500, { error: 'Error interno del servidor' });
+        }
         return;
     }
 
@@ -49,7 +128,12 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/prestamos') {
-        leerCuerpo(req, (datos) => {
+        leerCuerpo(req, res, (datos) => {
+            const persona = limpiar(datos.persona);
+            if (!persona) {
+                responderJSON(res, 400, { error: 'El nombre de la persona es obligatorio' });
+                return;
+            }
             const equipo = db.prepare('SELECT id, disponible FROM equipos WHERE id = ?').get(datos.equipoId);
             if (!equipo) {
                 responderJSON(res, 404, { error: 'Equipo no encontrado' });
@@ -60,14 +144,14 @@ const server = http.createServer((req, res) => {
                 return;
             }
             db.prepare('UPDATE equipos SET disponible = 0 WHERE id = ?').run(datos.equipoId);
-            db.prepare('INSERT INTO prestamos (equipo_id, persona, fecha_retiro) VALUES (?, ?, ?)').run(datos.equipoId, datos.persona, new Date().toISOString());
+            db.prepare('INSERT INTO prestamos (equipo_id, persona, fecha_retiro) VALUES (?, ?, ?)').run(datos.equipoId, persona, new Date().toISOString());
             responderJSON(res, 200, { mensaje: 'Prestamo registrado con exito' });
         });
         return;
     }
 
     if (req.method === 'POST' && req.url === '/api/devoluciones') {
-        leerCuerpo(req, (datos) => {
+        leerCuerpo(req, res, (datos) => {
             const equipo = db.prepare('SELECT id FROM equipos WHERE id = ?').get(datos.equipoId);
             if (!equipo) {
                 responderJSON(res, 404, { error: 'Equipo no encontrado' });

@@ -89,6 +89,11 @@ body:not(.portada) #portada{display:none}
 .marquee-pista span{padding-right:40px;white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:1px;color:var(--suave)}
 @keyframes desplazar{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .badge.uso{color:#fb923c;background:rgba(251,146,60,.14);border:1px solid rgba(251,146,60,.3)}
+
+.barra-acciones{display:flex;justify-content:flex-end;margin-bottom:16px}
+.acciones-equipo{display:flex;gap:8px;margin-top:6px}
+.btn.chico{padding:6px 12px;font-size:13px;margin-top:0}
+.btn.rojo{background:linear-gradient(90deg,#dc2626,#f87171)}
 </style>
 </head>
 <body class="portada">
@@ -136,7 +141,7 @@ body:not(.portada) #portada{display:none}
       </div>
     </section>
 
-    <section class="vista" id="vista-equipos"><div class="grilla" id="grilla"></div></section>
+    <section class="vista" id="vista-equipos"><div class="barra-acciones"><button class="btn" onclick="nuevoEquipo()">+ Nuevo equipo</button></div><div class="grilla" id="grilla"></div></section>
 
     <section class="vista" id="vista-historial">
       <div class="card"><table><thead><tr><th>EQUIPO</th><th>PERSONA</th><th>RETIRO</th><th>DEVOLUCI&Oacute;N</th><th>ESTADO</th></tr></thead><tbody id="tablaHistorial"></tbody></table></div>
@@ -152,6 +157,18 @@ body:not(.portada) #portada{display:none}
     <div class="acciones">
       <button class="btn gris" onclick="cerrarModal()">Cancelar</button>
       <button class="btn" onclick="confirmarRetiro()">Confirmar</button>
+    </div>
+  </div>
+</div>
+<div class="fondo-modal" id="modalEquipo" onclick="if(event.target===this)cerrarModalEquipo()">
+  <div class="card modal">
+    <h3 id="tituloModalEquipo">Nuevo equipo</h3>
+    <input id="inputNombre" placeholder="Nombre (ej: Camara Canon R6)">
+    <input id="inputTipo" placeholder="Tipo (ej: Camara)" list="listaTipos" onkeydown="if(event.key==='Enter')guardarEquipo()">
+    <datalist id="listaTipos"><option value="Camara"><option value="Microfono"><option value="Tripode"><option value="Iluminacion"></datalist>
+    <div class="acciones">
+      <button class="btn gris" onclick="cerrarModalEquipo()">Cancelar</button>
+      <button class="btn" onclick="guardarEquipo()">Guardar</button>
     </div>
   </div>
 </div>
@@ -237,6 +254,7 @@ function renderEquipos(){
         (e.disponible
           ? '<span class="badge ok">Disponible</span><button class="btn" onclick="retirarEquipo(' + e.id + ')">Retirar</button>'
           : '<span class="badge mal">No disponible</span>' + (e.enUsoPor ? '<div class="tipo">En uso por <b>' + esc(e.enUsoPor) + '</b></div>' : '') + '<button class="btn azul" onclick="devolverEquipo(' + e.id + ')">Devolver</button>') +
+        '<div class="acciones-equipo"><button class="btn gris chico" onclick="editarEquipo(' + e.id + ')">Editar</button><button class="btn rojo chico" onclick="borrarEquipo(' + e.id + ')">Borrar</button></div>' +
       '</div>').join('')
     : '<p class="vacio">No se encontraron equipos.</p>';
 }
@@ -267,7 +285,42 @@ function toast(m){
   const t = document.getElementById('toast');
   t.textContent = m; t.classList.add('visible');
   clearTimeout(temporizador);
-  temporizador = setTimeout(() => t.classList.remove('visible'), 2500);
+  temporizador = setTimeout(() => t.classList.remove('visible'), 4000);
+}
+
+let equipoEditando = null;
+function abrirModalEquipo(titulo, nombre, tipo){
+  document.getElementById('tituloModalEquipo').textContent = titulo;
+  document.getElementById('inputNombre').value = nombre;
+  document.getElementById('inputTipo').value = tipo;
+  document.getElementById('modalEquipo').classList.add('abierto');
+  document.getElementById('inputNombre').focus();
+}
+function nuevoEquipo(){ equipoEditando = null; abrirModalEquipo('Nuevo equipo', '', ''); }
+function editarEquipo(id){
+  const e = equipos.find(x => x.id === id);
+  if (!e) return;
+  equipoEditando = id;
+  abrirModalEquipo('Editar equipo', e.nombre, e.tipo);
+}
+function cerrarModalEquipo(){ document.getElementById('modalEquipo').classList.remove('abierto'); }
+function guardarEquipo(){
+  const nombre = document.getElementById('inputNombre').value.trim();
+  const tipo = document.getElementById('inputTipo').value.trim();
+  if (!nombre || !tipo) { toast('Completa el nombre y el tipo'); return; }
+  const url = equipoEditando ? '/api/equipos/' + equipoEditando : '/api/equipos';
+  const metodo = equipoEditando ? 'PUT' : 'POST';
+  fetch(url, {method: metodo, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({nombre: nombre, tipo: tipo})})
+    .then(r => r.json())
+    .then(r => { cerrarModalEquipo(); toast(r.mensaje || r.error); cargarDatos(); });
+}
+function borrarEquipo(id){
+  const e = equipos.find(x => x.id === id);
+  if (!e) return;
+  if (!confirm('Borrar "' + e.nombre + '"? Esta accion no se puede deshacer.')) return;
+  fetch('/api/equipos/' + id, {method: 'DELETE'})
+    .then(r => r.json())
+    .then(r => { toast(r.mensaje || r.error); cargarDatos(); });
 }
 
 /* ---------- Tema claro / oscuro ---------- */
