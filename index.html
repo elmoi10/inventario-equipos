@@ -94,6 +94,12 @@ body:not(.portada) #portada{display:none}
 .acciones-equipo{display:flex;gap:8px;margin-top:6px}
 .btn.chico{padding:6px 12px;font-size:13px;margin-top:0}
 .btn.rojo{background:linear-gradient(90deg,#dc2626,#f87171)}
+
+.filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.filtros input,.filtros select{background:var(--panel);border:1px solid var(--borde);color:var(--texto);padding:9px 12px;border-radius:10px;font:inherit;font-size:13px}
+:root[data-tema="oscuro"] .filtros input,:root[data-tema="oscuro"] .filtros select{color-scheme:dark}
+.filtros select option{background:#12182b;color:#e6e8f0}
+:root[data-tema="claro"] .filtros select option{background:#fff;color:#1e1e2e}
 </style>
 </head>
 <body class="portada">
@@ -138,12 +144,24 @@ body:not(.portada) #portada{display:none}
       <div class="fila-2">
         <div class="card"><h3>Pr&eacute;stamos por equipo</h3><div class="cuerpo" id="grafico"></div></div>
         <div class="card"><h3>&Uacute;ltimos movimientos</h3><div id="ultimos"></div></div>
+        <div class="card"><h3>Tiempo promedio de uso</h3><div id="statUso"></div></div>
+        <div class="card"><h3>Personas con m&aacute;s retiros</h3><div class="cuerpo" id="statPersonas"></div></div>
+        <div class="card" style="grid-column:1/-1"><h3>Retiros de m&aacute;s de 3 d&iacute;as</h3><div id="statAtrasados"></div></div>
       </div>
     </section>
 
     <section class="vista" id="vista-equipos"><div class="barra-acciones"><button class="btn" onclick="nuevoEquipo()">+ Nuevo equipo</button></div><div class="grilla" id="grilla"></div></section>
 
     <section class="vista" id="vista-historial">
+      <div class="filtros">
+        <input id="fPersona" placeholder="Persona..." oninput="filtrarHistorial()">
+        <input id="fEquipo" placeholder="Equipo..." oninput="filtrarHistorial()">
+        <select id="fEstado" onchange="filtrarHistorial()"><option value="">Todos los estados</option><option value="uso">En uso</option><option value="devuelto">Devueltos</option></select>
+        <input type="date" id="fDesde" title="Desde" onchange="filtrarHistorial()">
+        <input type="date" id="fHasta" title="Hasta" onchange="filtrarHistorial()">
+        <button class="btn gris chico" onclick="limpiarFiltros()">Limpiar</button>
+        <span class="vacio" id="contadorHistorial"></span>
+      </div>
       <div class="card"><table><thead><tr><th>EQUIPO</th><th>PERSONA</th><th>RETIRO</th><th>DEVOLUCI&Oacute;N</th><th>ESTADO</th></tr></thead><tbody id="tablaHistorial"></tbody></table></div>
     </section>
   </main>
@@ -207,7 +225,7 @@ function cargarDatos(){
     fetch('/api/prestamos').then(r => r.json())
   ]).then(([eq, pr]) => {
     equipos = eq; prestamos = pr;
-    renderStats(); renderPortada(); renderGrafico(); renderUltimos(); renderEquipos(); renderHistorial();
+    renderStats(); renderPortada(); renderGrafico(); renderUltimos(); renderEquipos(); cargarHistorial(); cargarEstadisticas();
   });
 }
 
@@ -321,6 +339,47 @@ function borrarEquipo(id){
   fetch('/api/equipos/' + id, {method: 'DELETE'})
     .then(r => r.json())
     .then(r => { toast(r.mensaje || r.error); cargarDatos(); });
+}
+
+function textoDuracion(h){
+  if (h === null || h === undefined) return '-';
+  if (h < 1) return Math.round(h * 60) + ' min';
+  if (h < 48) return h.toFixed(1) + ' h';
+  return (h / 24).toFixed(1) + ' d&iacute;as';
+}
+let temporizadorFiltro;
+function filtrarHistorial(){ clearTimeout(temporizadorFiltro); temporizadorFiltro = setTimeout(cargarHistorial, 250); }
+function limpiarFiltros(){
+  ['fPersona', 'fEquipo', 'fEstado', 'fDesde', 'fHasta'].forEach(id => { document.getElementById(id).value = ''; });
+  cargarHistorial();
+}
+function cargarHistorial(){
+  const params = new URLSearchParams();
+  const campos = {persona: 'fPersona', equipo: 'fEquipo', estado: 'fEstado', desde: 'fDesde', hasta: 'fHasta'};
+  Object.keys(campos).forEach(k => {
+    const v = document.getElementById(campos[k]).value.trim();
+    if (v) params.set(k, v);
+  });
+  fetch('/api/historial?' + params.toString()).then(r => r.json()).then(lista => {
+    document.getElementById('tablaHistorial').innerHTML = lista.length
+      ? filasTabla(lista)
+      : '<tr><td colspan="5" class="vacio" style="padding:16px 20px">No hay pr&eacute;stamos con esos filtros.</td></tr>';
+    document.getElementById('contadorHistorial').textContent = lista.length + ' resultado(s)';
+  });
+}
+function cargarEstadisticas(){
+  fetch('/api/estadisticas').then(r => r.json()).then(s => {
+    document.getElementById('statUso').innerHTML = '<table><thead><tr><th>EQUIPO</th><th>VECES</th><th>PROMEDIO</th></tr></thead><tbody>' +
+      s.porEquipo.map(e => '<tr><td>' + esc(e.nombre) + '</td><td>' + e.veces + '</td><td>' + textoDuracion(e.promedioHoras) + '</td></tr>').join('') + '</tbody></table>';
+    const max = s.personas.length ? s.personas[0].veces : 1;
+    document.getElementById('statPersonas').innerHTML = s.personas.length
+      ? s.personas.map(p => '<div class="barra-fila"><div class="tit"><span>' + esc(p.persona) + '</span><b>' + p.veces + '</b></div><div class="barra"><span style="width:' + (p.veces / max * 100) + '%"></span></div></div>').join('')
+      : '<p class="vacio">Todav&iacute;a no hay pr&eacute;stamos.</p>';
+    document.getElementById('statAtrasados').innerHTML = s.atrasados.length
+      ? '<table><thead><tr><th>EQUIPO</th><th>PERSONA</th><th>RETIRO</th><th>D&Iacute;AS</th></tr></thead><tbody>' +
+        s.atrasados.map(a => '<tr><td>' + esc(a.equipo) + '</td><td>' + esc(a.persona) + '</td><td>' + new Date(a.fechaRetiro).toLocaleString() + '</td><td><span class="badge mal">' + a.dias + '</span></td></tr>').join('') + '</tbody></table>'
+      : '<p class="vacio" style="padding:16px 20px;margin:0">Ning&uacute;n equipo lleva m&aacute;s de 3 d&iacute;as prestado.</p>';
+  });
 }
 
 /* ---------- Tema claro / oscuro ---------- */

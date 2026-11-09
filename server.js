@@ -121,6 +121,47 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    const url = new URL(req.url, 'http://localhost');
+
+    if (req.method === 'GET' && url.pathname === '/api/historial') {
+        const q = url.searchParams;
+        const condiciones = [];
+        const params = [];
+        if (q.get('persona')) { condiciones.push('prestamos.persona LIKE ?'); params.push('%' + q.get('persona') + '%'); }
+        if (q.get('equipo')) { condiciones.push('equipos.nombre LIKE ?'); params.push('%' + q.get('equipo') + '%'); }
+        if (q.get('estado') === 'uso') { condiciones.push('prestamos.fecha_devolucion IS NULL'); }
+        if (q.get('estado') === 'devuelto') { condiciones.push('prestamos.fecha_devolucion IS NOT NULL'); }
+        if (q.get('desde')) { condiciones.push("date(prestamos.fecha_retiro, 'localtime') >= ?"); params.push(q.get('desde')); }
+        if (q.get('hasta')) { condiciones.push("date(prestamos.fecha_retiro, 'localtime') <= ?"); params.push(q.get('hasta')); }
+        const donde = condiciones.length ? ' WHERE ' + condiciones.join(' AND ') : '';
+        const sql = 'SELECT prestamos.id AS id, prestamos.equipo_id AS equipoId, equipos.nombre AS equipoNombre, prestamos.persona AS persona, prestamos.fecha_retiro AS fechaRetiro, prestamos.fecha_devolucion AS fechaDevolucion FROM prestamos JOIN equipos ON prestamos.equipo_id = equipos.id' + donde + ' ORDER BY prestamos.id DESC';
+        try {
+            const filas = db.prepare(sql).all(...params);
+            responderJSON(res, 200, filas.map(f => ({ ...f })));
+        } catch (e) {
+            console.error(e);
+            responderJSON(res, 500, { error: 'Error interno del servidor' });
+        }
+        return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/estadisticas') {
+        try {
+            const porEquipo = db.prepare("SELECT equipos.nombre AS nombre, COUNT(prestamos.id) AS veces, AVG(CASE WHEN prestamos.fecha_devolucion IS NOT NULL AND prestamos.fecha_devolucion <> prestamos.fecha_retiro THEN (julianday(prestamos.fecha_devolucion) - julianday(prestamos.fecha_retiro)) * 24 END) AS promedioHoras FROM equipos LEFT JOIN prestamos ON prestamos.equipo_id = equipos.id GROUP BY equipos.id ORDER BY veces DESC").all();
+            const personas = db.prepare("SELECT persona, COUNT(*) AS veces FROM prestamos GROUP BY persona ORDER BY veces DESC, persona LIMIT 5").all();
+            const atrasados = db.prepare("SELECT equipos.nombre AS equipo, prestamos.persona AS persona, prestamos.fecha_retiro AS fechaRetiro, CAST(julianday('now') - julianday(prestamos.fecha_retiro) AS INTEGER) AS dias FROM prestamos JOIN equipos ON prestamos.equipo_id = equipos.id WHERE prestamos.fecha_devolucion IS NULL AND julianday('now') - julianday(prestamos.fecha_retiro) > 3 ORDER BY dias DESC").all();
+            responderJSON(res, 200, {
+                porEquipo: porEquipo.map(f => ({ ...f })),
+                personas: personas.map(f => ({ ...f })),
+                atrasados: atrasados.map(f => ({ ...f }))
+            });
+        } catch (e) {
+            console.error(e);
+            responderJSON(res, 500, { error: 'Error interno del servidor' });
+        }
+        return;
+    }
+
     if (req.method === 'GET' && req.url === '/api/prestamos') {
         const filas = db.prepare('SELECT prestamos.id AS id, prestamos.equipo_id AS equipoId, equipos.nombre AS equipoNombre, prestamos.persona AS persona, prestamos.fecha_retiro AS fechaRetiro, prestamos.fecha_devolucion AS fechaDevolucion FROM prestamos JOIN equipos ON prestamos.equipo_id = equipos.id ORDER BY prestamos.id ASC').all();
         responderJSON(res, 200, filas.map(f => ({ ...f })));
