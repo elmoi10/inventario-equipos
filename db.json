@@ -67,6 +67,48 @@
       "equipoNombre": "Tripode Manfrotto",
       "persona": "maxma",
       "fechaRetiro": "2026-07-15T00:20:31.179Z"
+    },
+    {
+      "equipoId": 2,
+      "equipoNombre": "Microfono Rode NT1",
+      "persona": "jose",
+      "fechaRetiro": "2026-09-02T23:45:54.548Z"
+    },
+    {
+      "equipoId": 2,
+      "equipoNombre": "Microfono Rode NT1",
+      "persona": "ko",
+      "fechaRetiro": "2026-09-02T23:46:09.099Z"
+    },
+    {
+      "equipoId": 3,
+      "equipoNombre": "Tripode Manfrotto",
+      "persona": "moises",
+      "fechaRetiro": "2026-09-07T17:22:10.472Z"
+    },
+    {
+      "equipoId": 2,
+      "equipoNombre": "Microfono Rode NT1",
+      "persona": "yo",
+      "fechaRetiro": "2026-09-07T17:29:50.950Z"
+    },
+    {
+      "equipoId": 3,
+      "equipoNombre": "Tripode Manfrotto",
+      "persona": "me",
+      "fechaRetiro": "2026-09-07T17:30:26.345Z"
+    },
+    {
+      "equipoId": 2,
+      "equipoNombre": "Microfono Rode NT1",
+      "persona": "njiujb",
+      "fechaRetiro": "2026-09-07T17:33:37.360Z"
+    },
+    {
+      "equipoId": 2,
+      "equipoNombre": "Microfono Rode NT1",
+      "persona": "znckxc",
+      "fechaRetiro": "2026-09-09T22:41:45.833Z"
     }
   ]
 }

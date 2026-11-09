@@ -12,9 +12,26 @@
         body {
             font-family: 'Inter', Arial, sans-serif;
             margin: 0;
-            background-color: #0b0f1a;
+            background-color: #080c16;
             color: #e6e8f0;
             cursor: none;
+            min-height: 100vh;
+        }
+
+        /* Fondo cinematográfico ambiental con fotografía de estudio translúcida */
+        .fondo-decorativo {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 18% 18%, rgba(168, 85, 247, 0.2), transparent 45%),
+                radial-gradient(circle at 82% 78%, rgba(99, 102, 241, 0.16), transparent 50%),
+                linear-gradient(to bottom, rgba(8, 12, 22, 0.84), rgba(8, 12, 22, 0.94)),
+                url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=2000&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: -1;
         }
 
         #cursor-punto {
@@ -81,7 +98,7 @@
             justify-content: center;
             text-align: center;
             padding: 24px;
-            background: radial-gradient(circle at 50% 30%, #12182b, #0b0f1a 70%);
+            background: transparent;
         }
         .tag {
             border: 1px solid #2a3352;
@@ -144,9 +161,11 @@
             display: none;
         }
         header {
-            background: linear-gradient(135deg, #12182b, #0b0f1a);
-            border-bottom: 1px solid #1e2540;
-            padding: 28px 24px;
+            background: rgba(14, 20, 36, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 24px 24px;
         }
         header h1 {
             margin: 0;
@@ -171,11 +190,14 @@
             margin-bottom: 10px;
         }
         .tarjeta-resumen {
-            background: #12182b;
-            border: 1px solid #1e2540;
+            background: rgba(18, 24, 43, 0.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             padding: 18px;
             text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
         .tarjeta-resumen .numero {
             font-size: 28px;
@@ -197,14 +219,102 @@
             font-weight: 700;
         }
 
+        .seccion-equipos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 44px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #1e2540;
+            padding-bottom: 10px;
+        }
+        .seccion-equipos-header h2 {
+            margin: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .buscador-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+        .icono-buscar {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        #buscador-input {
+            width: 100%;
+            padding: 9px 14px 9px 34px;
+            background: #12182b;
+            border: 1px solid #1e2540;
+            border-radius: 10px;
+            color: #e6e8f0;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+        #buscador-input:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+        }
+
+        .filtros-contenedor {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+        .filtro-btn {
+            background: #12182b;
+            border: 1px solid #1e2540;
+            color: #9aa3b8;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0;
+        }
+        .filtro-btn:hover {
+            border-color: #7d8399;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        .filtro-btn.activo {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: #a855f7;
+            color: #d8b4fe;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+        }
+
+        .sin-resultados {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            background: #12182b;
+            border: 1px dashed #1e2540;
+            border-radius: 12px;
+        }
+
         #lista-equipos {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
             gap: 16px;
         }
         .tarjeta-equipo {
-            background: #12182b;
-            border: 1px solid #1e2540;
+            background: rgba(18, 24, 43, 0.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             padding: 18px;
             border-radius: 12px;
             display: flex;
@@ -213,6 +323,7 @@
             opacity: 0;
             animation: aparecer 0.4s ease forwards;
             transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
         @keyframes aparecer {
             from {
@@ -252,11 +363,51 @@
             background-color: rgba(34,197,94,0.15);
             color: #4ade80;
             border: 1px solid rgba(74,222,128,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pulso-verde {
+            width: 7px;
+            height: 7px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+            animation: pulso 1.8s infinite;
+        }
+        @keyframes pulso {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+            }
         }
         .badge.ocupado {
             background-color: rgba(239,68,68,0.15);
             color: #f87171;
             border: 1px solid rgba(248,113,113,0.3);
+        }
+        .info-prestamo-tarjeta {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px dashed rgba(248, 113, 113, 0.3);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: #fca5a5;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .info-prestamo-tarjeta strong {
+            color: #ffffff;
         }
         button {
             background: linear-gradient(90deg, #16a34a, #22c55e);
@@ -277,10 +428,13 @@
         }
 
         #lista-historial {
-            background: #12182b;
-            border: 1px solid #1e2540;
+            background: rgba(18, 24, 43, 0.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
         .fila-historial {
             padding: 13px 18px;
@@ -299,9 +453,158 @@
             float: right;
             font-size: 13px;
         }
+
+        /* ===== MODAL GLASSMORPHISM ===== */
+        #modal-retiro {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 15, 26, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99990;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-contenido {
+            background: #12182b;
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 35px rgba(168, 85, 247, 0.15);
+            border-radius: 16px;
+            padding: 28px;
+            width: 90%;
+            max-width: 420px;
+            animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-tag {
+            font-size: 12px;
+            font-weight: 700;
+            color: #a855f7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .modal-titulo {
+            margin: 6px 0 6px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .modal-desc {
+            margin: 0 0 18px;
+            color: #7d8399;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0b0f1a;
+            border: 1px solid #1e2540;
+            border-radius: 10px;
+            color: #e6e8f0;
+            font-size: 15px;
+            margin-bottom: 22px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+        .modal-input:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+        }
+        .modal-botones {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn-cancelar {
+            background: transparent;
+            border: 1px solid #2a3352;
+            color: #9aa3b8;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .btn-cancelar:hover {
+            border-color: #7d8399;
+            color: #ffffff;
+        }
+        .btn-confirmar {
+            background: linear-gradient(90deg, #a855f7, #6366f1);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .btn-confirmar:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            background: rgba(18, 24, 43, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #2a3352;
+            color: #e6e8f0;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: auto;
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .toast.toast-exito {
+            border-color: rgba(74, 222, 128, 0.45);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 20px rgba(74, 222, 128, 0.15);
+        }
+        .toast.toast-error {
+            border-color: rgba(248, 113, 113, 0.45);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 20px rgba(248, 113, 113, 0.15);
+        }
+        .toast-icono {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Fondo cinematográfico ambiental con imagen translúcida -->
+    <div class="fondo-decorativo"></div>
 
     <div id="cursor-punto"></div>
     <div id="cursor-anillo"></div>
@@ -360,7 +663,24 @@
                 </div>
             </div>
 
-            <h2>Equipos</h2>
+            <div class="seccion-equipos-header">
+                <h2>Equipos</h2>
+                <div class="buscador-wrap">
+                    <span class="icono-buscar">🔍</span>
+                    <input type="text" id="buscador-input" placeholder="Buscar por nombre o tipo..." oninput="filtrarEquipos()" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Filtros en píldoras -->
+            <div class="filtros-contenedor">
+                <button class="filtro-btn activo" data-filtro="todos" onclick="setFiltro('todos')">Todos</button>
+                <button class="filtro-btn" data-filtro="Camara" onclick="setFiltro('Camara')">📷 Cámaras</button>
+                <button class="filtro-btn" data-filtro="Microfono" onclick="setFiltro('Microfono')">🎤 Micrófonos</button>
+                <button class="filtro-btn" data-filtro="Tripode" onclick="setFiltro('Tripode')">🎥 Trípodes</button>
+                <button class="filtro-btn" data-filtro="Iluminacion" onclick="setFiltro('Iluminacion')">💡 Iluminación</button>
+                <button class="filtro-btn" data-filtro="disponibles" onclick="setFiltro('disponibles')">🟢 Solo disponibles</button>
+            </div>
+
             <div id="lista-equipos">
                 <p>Cargando equipos...</p>
             </div>
@@ -371,6 +691,23 @@
             </div>
         </main>
     </div>
+
+    <!-- Modal para retirar equipo -->
+    <div id="modal-retiro">
+        <div class="modal-contenido">
+            <div class="modal-tag">Confirmar Retiro</div>
+            <h3 id="modal-equipo-nombre" class="modal-titulo">Equipo</h3>
+            <p class="modal-desc">Ingresá el nombre de la persona responsable que retira este equipo.</p>
+            <input type="text" id="modal-persona-input" class="modal-input" placeholder="Nombre y Apellido" autocomplete="off">
+            <div class="modal-botones">
+                <button type="button" class="btn-cancelar" onclick="cerrarModalRetiro()">Cancelar</button>
+                <button type="button" class="btn-confirmar" onclick="confirmarRetiro()">Confirmar Retiro</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de notificaciones Toast -->
+    <div id="toast-container"></div>
 
     <script>
         const punto = document.getElementById('cursor-punto');
@@ -405,37 +742,95 @@
             return iconosPorTipo[tipo] || '📦';
         }
 
+        let listaEquiposData = [];
+        let listaPrestamosData = [];
+        let filtroActivo = 'todos';
+
         function cargarEquipos() {
-            fetch('/api/equipos')
-                .then(respuesta => respuesta.json())
-                .then(equipos => {
-                    let html = '';
-                    let disponibles = 0;
+            Promise.all([
+                fetch('/api/equipos').then(r => r.json()),
+                fetch('/api/prestamos').then(r => r.json())
+            ])
+            .then(([equipos, prestamos]) => {
+                listaEquiposData = equipos;
+                listaPrestamosData = prestamos;
 
-                    equipos.forEach((equipo, index) => {
-                        if (equipo.disponible) disponibles++;
+                const disponibles = equipos.filter(e => e.disponible).length;
+                document.getElementById('total-equipos').textContent = equipos.length;
+                document.getElementById('total-disponibles').textContent = disponibles;
+                document.getElementById('total-prestados').textContent = equipos.length - disponibles;
 
-                        html += '<div class="tarjeta-equipo" style="animation-delay:' + (index * 0.08) + 's">';
-                        html += '<div class="icono">' + iconoDe(equipo.tipo) + '</div>';
-                        html += '<div class="nombre">' + equipo.nombre + '</div>';
-                        html += '<div class="tipo">' + equipo.tipo + '</div>';
+                renderizarEquipos();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('lista-equipos').innerHTML = '<p style="color:#f87171;">Error al cargar equipos.</p>';
+            });
+        }
 
-                        if (equipo.disponible) {
-                            html += '<span class="badge disponible">Disponible</span>';
-                            html += '<button onclick="retirarEquipo(' + equipo.id + ')">Retirar</button>';
-                        } else {
-                            html += '<span class="badge ocupado">No disponible</span>';
-                            html += '<button class="devolver" onclick="devolverEquipo(' + equipo.id + ')">Devolver</button>';
-                        }
+        function setFiltro(tipo) {
+            filtroActivo = tipo;
+            document.querySelectorAll('.filtro-btn').forEach(btn => {
+                btn.classList.toggle('activo', btn.getAttribute('data-filtro') === tipo);
+            });
+            renderizarEquipos();
+        }
 
-                        html += '</div>';
-                    });
+        function filtrarEquipos() {
+            renderizarEquipos();
+        }
 
-                    document.getElementById('lista-equipos').innerHTML = html;
-                    document.getElementById('total-equipos').textContent = equipos.length;
-                    document.getElementById('total-disponibles').textContent = disponibles;
-                    document.getElementById('total-prestados').textContent = equipos.length - disponibles;
-                });
+        function obtenerUltimoResponsable(equipoId) {
+            const prestamosEquipo = listaPrestamosData.filter(p => p.equipoId == equipoId);
+            if (prestamosEquipo.length === 0) return 'Sin registrar';
+            return prestamosEquipo[prestamosEquipo.length - 1].persona;
+        }
+
+        function renderizarEquipos() {
+            const inputBuscar = document.getElementById('buscador-input');
+            const query = (inputBuscar ? inputBuscar.value : '').toLowerCase().trim();
+
+            const filtrados = listaEquiposData.filter(equipo => {
+                const coincideTexto = equipo.nombre.toLowerCase().includes(query) ||
+                                     equipo.tipo.toLowerCase().includes(query);
+                if (!coincideTexto) return false;
+
+                if (filtroActivo === 'todos') return true;
+                if (filtroActivo === 'disponibles') return equipo.disponible === true;
+                return equipo.tipo === filtroActivo;
+            });
+
+            if (filtrados.length === 0) {
+                document.getElementById('lista-equipos').innerHTML = `
+                    <div class="sin-resultados">
+                        <div style="font-size: 28px; margin-bottom: 6px;">🔍</div>
+                        <p style="margin: 0; color: #7d8399; font-weight: 600; font-size: 14px;">No se encontraron equipos para esta búsqueda o filtro.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtrados.forEach((equipo, index) => {
+                html += '<div class="tarjeta-equipo" style="animation-delay:' + (index * 0.05) + 's">';
+                html += '<div class="icono">' + iconoDe(equipo.tipo) + '</div>';
+                html += '<div class="nombre">' + equipo.nombre + '</div>';
+                html += '<div class="tipo">' + equipo.tipo + '</div>';
+
+                if (equipo.disponible) {
+                    html += '<span class="badge disponible"><span class="pulso-verde"></span>Disponible</span>';
+                    html += '<button onclick="abrirModalRetiro(' + equipo.id + ', \'' + equipo.nombre.replace(/'/g, "\\'") + '\')">Retirar</button>';
+                } else {
+                    const responsable = obtenerUltimoResponsable(equipo.id);
+                    html += '<span class="badge ocupado">No disponible</span>';
+                    html += '<div class="info-prestamo-tarjeta"><span>👤</span><span>Prestado a: <strong>' + responsable + '</strong></span></div>';
+                    html += '<button class="devolver" onclick="devolverEquipo(' + equipo.id + ')">Devolver</button>';
+                }
+
+                html += '</div>';
+            });
+
+            document.getElementById('lista-equipos').innerHTML = html;
         }
 
         function cargarHistorial() {
@@ -460,22 +855,77 @@
                 });
         }
 
-        function retirarEquipo(id) {
-            const persona = prompt('Nombre de la persona que retira:');
+        /* ===== SISTEMA DE NOTIFICACIONES TOAST ===== */
+        function mostrarToast(mensaje, tipo = 'exito') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + tipo;
+            const icono = tipo === 'exito' ? '✓' : '⚠️';
+            toast.innerHTML = '<span class="toast-icono">' + icono + '</span><span>' + mensaje + '</span>';
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px) scale(0.95)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        /* ===== MODAL RETIRO DE EQUIPOS ===== */
+        let equipoSeleccionado = null;
+
+        function abrirModalRetiro(id, nombre) {
+            equipoSeleccionado = id;
+            document.getElementById('modal-equipo-nombre').textContent = nombre;
+            const input = document.getElementById('modal-persona-input');
+            input.value = '';
+            document.getElementById('modal-retiro').style.display = 'flex';
+            setTimeout(() => input.focus(), 50);
+        }
+
+        function cerrarModalRetiro() {
+            document.getElementById('modal-retiro').style.display = 'none';
+            equipoSeleccionado = null;
+        }
+
+        document.getElementById('modal-retiro').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-retiro') cerrarModalRetiro();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('modal-retiro').style.display === 'flex') {
+                cerrarModalRetiro();
+            }
+        });
+
+        document.getElementById('modal-persona-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') confirmarRetiro();
+        });
+
+        function confirmarRetiro() {
+            const input = document.getElementById('modal-persona-input');
+            const persona = input.value.trim();
+
             if (!persona) {
+                mostrarToast('Por favor, ingresá el nombre de la persona.', 'error');
+                input.focus();
                 return;
             }
 
             fetch('/api/prestamos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ equipoId: id, persona: persona })
+                body: JSON.stringify({ equipoId: equipoSeleccionado, persona: persona })
             })
                 .then(respuesta => respuesta.json())
                 .then(resultado => {
-                    alert(resultado.mensaje);
+                    cerrarModalRetiro();
+                    mostrarToast(resultado.mensaje || 'Préstamo registrado con éxito', 'exito');
                     cargarEquipos();
                     cargarHistorial();
+                })
+                .catch(err => {
+                    mostrarToast('Error de conexión al registrar préstamo', 'error');
                 });
         }
 
@@ -487,9 +937,12 @@
             })
                 .then(respuesta => respuesta.json())
                 .then(resultado => {
-                    alert(resultado.mensaje);
+                    mostrarToast(resultado.mensaje || 'Devolución registrada con éxito', 'exito');
                     cargarEquipos();
                     cargarHistorial();
+                })
+                .catch(err => {
+                    mostrarToast('Error al procesar la devolución', 'error');
                 });
         }
     </script>
